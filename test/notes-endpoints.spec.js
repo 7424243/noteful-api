@@ -19,4 +19,15 @@ describe('Notes Enpoints', function() {
     before('clean the table', () => db.raw('TRUNCATE noteful_notes, noteful_folders RESTART IDENTITY CASCADE'))
     //clear up table after each test
     afterEach('cleanup', () => db.raw('TRUNCATE noteful_notes, noteful_folders RESTART IDENTITY CASCADE'))
+
+    describe('GET /api/notes', () => {
+        //for when the db table is empty
+        context('Given no notes', () => {
+            it(`responds with 200 and an empty list`, () => {
+                return supertest(app)
+                    .get('/api/notes')
+                    .expect(200, [])
+            })
+        })
+    })
 })
