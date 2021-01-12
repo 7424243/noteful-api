@@ -5,6 +5,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const {NODE_ENV} = require('./config')
 const notesRouter = require('./notes/notes-router')
+const NotesService = require('./notes/notes-service')
 
 const app = express()
 
@@ -18,7 +19,7 @@ app.get('/', (req, res) => {
     res.send('Hello, world!')
 })
 
-app.use('/api/notes', notesRouter)
+app.use('/notes', notesRouter)
 
 
 app.use(function errorHandler(error, req, res, next) {

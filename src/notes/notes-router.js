@@ -22,5 +22,7 @@ notesRouter
             .then(notes => {
                 res.json(notes.map(serializeNote))
             })
-            .cath(next)
+            .catch(next)
     })
+
+module.exports = notesRouter
