@@ -39,7 +39,7 @@ describe('Notes Enpoints', function() {
                     .into('noteful_notes')
                     .insert(testNotes)
             })
-            it('GET /api/notes responds with 200 and all of the articles', () => {
+            it('GET /api/notes responds with 200 and all of the notes', () => {
                 return supertest(app)
                     .get('/api/notes')
                     .expect(200, testNotes)
