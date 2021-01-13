@@ -2,6 +2,7 @@ const {expect} = require('chai')
 const knex = require('knex')
 const supertest = require('supertest')
 const app = require('../src/app')
+const {makeNotesArray} = require('./notes.fixtures')
 
 describe('Notes Enpoints', function() {
     let db
@@ -29,5 +30,22 @@ describe('Notes Enpoints', function() {
                     .expect(200, [])
             })
         })
+
+        //for when the db table has data
+        context('Given there are notes in the database', () => {
+            const testNotes = makeNotesArray()
+            beforeEach('insert notes', () => {
+                return db
+                    .into('noteful_notes')
+                    .insert(testNotes)
+            })
+            it('GET /api/notes responds with 200 and all of the articles', () => {
+                return supertest(app)
+                    .get('/api/notes')
+                    .expect(200, testNotes)
+            })
+        })
+
+
     })
 })
