@@ -2,7 +2,7 @@ const {expect} = require('chai')
 const knex = require('knex')
 const supertest = require('supertest')
 const app = require('../src/app')
-const {makeNotesArray} = require('./notes.fixtures')
+const {makeNotesArray, makeMaliciousNote} = require('./notes.fixtures')
 const {makeFoldersArray} = require('./folders.fixtures')
 
 describe('Notes Enpoints', function() {
@@ -55,6 +55,29 @@ describe('Notes Enpoints', function() {
             })
         })
 
-
+        //XSS attack tests
+        context('Given an XSS attack note', () => {
+            const testFolders = makeFoldersArray()
+            const {maliciousNote, expectedNote} = makeMaliciousNote()
+            beforeEach('insert malicious note', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(maliciousNote)
+                    })
+            })
+            it('removes XSS attack content', () => {
+                return supertest(app)
+                    .get('/api/notes')
+                    .expect(200)
+                    .expect(res => {
+                        expect(res.body[0].note_name).to.eql(expectedNote.note_name)
+                        expect(res.body[0].content).to.eql(expectedNote.content)
+                    })
+            })
+        })
     })
 })
