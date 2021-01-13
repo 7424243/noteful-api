@@ -174,4 +174,51 @@ describe('Folders endpoints', function() {
         })
     })
 
+    describe.only(`PATCH /api/folders/:folder_id`, () => {
+        context(`Given no folders`, () => {
+            it(`responds with 404`, () => {
+                const folderId = 12345
+                return supertest(app)
+                    .patch(`/api/folders/${folderId}`)
+                    .expect(404, {error: {message: `Folder doesn't exist`}})
+            })
+        })
+        context(`Given there are folders in the database`, () => {
+            const testFolders = makeFoldersArray()
+            beforeEach('insert folders', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            })
+            it(`responds with 204 and updates the folder`, () => {
+                const idToUpdate = 2
+                const updateFolder = {
+                    folder_name: 'Updated Name'
+                }
+                const expectedFolder = {
+                    ...testFolders[idToUpdate - 1],
+                    ...updateFolder
+                }
+                return supertest(app)
+                    .patch(`/api/folders/${idToUpdate}`)
+                    .send(updateFolder)
+                    .expect(204)
+                    .then(res => {
+                        supertest(app)
+                            .get(`/api/folders/${idToUpdate}`)
+                            .expect(expectedFolder)
+                    })
+            })
+            it(`responds with 400 when no required fields supplied`, () => {
+                const idToUpdate = 2
+                return supertest(app)
+                    .patch(`/api/folders/${idToUpdate}`)
+                    .send({irrelevantField: 'Foo'})
+                    .expect(400, {
+                        error: {message: `Request body must contain 'folder_name'`}
+                    })
+            })
+        })
+    })
+
 })

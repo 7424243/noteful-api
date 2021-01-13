@@ -298,7 +298,7 @@ describe('Notes Endpoints', function() {
                          error: {message: `Request body must contain either 'note_name', 'content', or 'folder_id'`}
                     })
             })
-            it('responds with 204 when updating only a subet of fields', () => {
+            it('responds with 204 when updating only a subset of fields', () => {
                 const idToUpdate = 2
                 const updateNote = {
                     note_name: 'Updated Name'
