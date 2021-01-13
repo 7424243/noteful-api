@@ -5,7 +5,7 @@ const app = require('../src/app')
 const {makeNotesArray, makeMaliciousNote} = require('./notes.fixtures')
 const {makeFoldersArray} = require('./folders.fixtures')
 
-describe('Notes Enpoints', function() {
+describe('Notes Endpoints', function() {
     let db
     //create a knex instance to connect to the test db
     before('make knex instance', () => {
@@ -137,7 +137,7 @@ describe('Notes Enpoints', function() {
     })
 
     describe(`POST /api/notes`, () => {
-        it(`creates a note, responding with 201 and the new note`, function() {
+        it(`creates a note, responding with 201 and the new note`, () => {
             this.retries(3)
             const newNote = {
                 note_name: 'Test Note Name',
@@ -200,11 +200,11 @@ describe('Notes Enpoints', function() {
         it(`removes XSS attack content from response`, () => {
             const {maliciousNote, expectedNote} = makeMaliciousNote()
             return supertest(app)
-                .post('/api/notes')
+                .post(`/api/notes`)
                 .send(maliciousNote)
                 .expect(201)
                 .expect(res => {
-                    expect(res.body.note_name).to.eql(expectedNote.note_name)
+                    expect(res.body.title).to.eql(expectedNote.note_name)
                     expect(res.body.content).to.eql(expectedNote.content)
                 })
         })
@@ -246,7 +246,7 @@ describe('Notes Enpoints', function() {
             })
         })
     })
-    describe.only(`PATCH /api/notes/:note_id`, () => {
+    describe(`PATCH /api/notes/:note_id`, () => {
         context(`Given no notes`, () => {
             it(`responds with 404`, () => {
                 const noteId = 123456
