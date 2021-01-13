@@ -82,7 +82,7 @@ notesRouter
         const numberOfValues = Object.values(noteToUpdate).filter(Boolean).length
         if(numberOfValues === 0) {
             return res.status(400).json({
-                error: {message: `Request body must contain either 'note_name', 'content', or 'folder_id`}
+                error: {message: `Request body must contain either 'note_name', 'content', or 'folder_id'`}
             })
         }
         NotesService.updateNote(
