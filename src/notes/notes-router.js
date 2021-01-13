@@ -64,5 +64,8 @@ notesRouter
             })
             .catch(next)
     })
+    .get((req, res, next) => {
+        res.json(serializeNote(res.note))
+    })
 
 module.exports = notesRouter
