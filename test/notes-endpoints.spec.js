@@ -137,7 +137,7 @@ describe('Notes Enpoints', function() {
     })
 
     describe(`POST /api/notes`, () => {
-        it(`creates a new note, responding with 201 and the new note`, function() {
+        it(`creates a note, responding with 201 and the new note`, function() {
             this.retries(3)
             const newNote = {
                 note_name: 'Test Note Name',
