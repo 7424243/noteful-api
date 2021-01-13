@@ -80,4 +80,37 @@ describe('Notes Enpoints', function() {
             })
         })
     })
+
+    describe.only(`GET /api/notes/:note_id`, () => {
+        context('Given no notes', () => {
+            it('Responds with 400', () => {
+                const noteId = 123456
+                return supertest(app)
+                    .get(`/api/notes/${noteId}`)
+                    .expect(404, {error: {message: `Note doesn't exist`}})
+            })
+        })
+        context('Given there are notes in the db', () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
+            beforeEach('insert notes', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
+            })
+            it('GET /api/notes/:note_id responds with 200 and the specified note', () => {
+                const noteId = 2
+                const expectedNote = testNotes[noteId - 1]
+                return supertest(app)
+                    .get(`/api/notes/${noteId}`)
+                    .expect(200, expectedNote)
+            })
+        })
+        
+    })
 })
