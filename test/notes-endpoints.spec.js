@@ -136,7 +136,7 @@ describe('Notes Enpoints', function() {
         })
     })
 
-    describe.only(`POST /api/notes`, () => {
+    describe(`POST /api/notes`, () => {
         it(`creates a new note, responding with 201 and the new note`, function() {
             this.retries(3)
             const newNote = {

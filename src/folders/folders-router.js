@@ -3,6 +3,7 @@ const xss = require('xss')
 const FoldersService = require('./folders-service')
 const path = require('path')
 const {json} = require('express')
+const NotesService = require('../notes/notes-service')
 
 const foldersRouter = express.Router()
 const jsonParser = express.json()
@@ -63,6 +64,16 @@ foldersRouter
     })
     .get((req, res, next) => {
         res.json(serializeFolder(res.folder))
+    })
+    .delete((req, res, next) => {
+        FoldersService.deleteFolder(
+            req.app.get('db'),
+            req.params.folder_id
+        )
+            .then(numRowsAffected => {
+                res.status(204).end()
+            })
+            .catch(next)
     })
 
 module.exports = foldersRouter
