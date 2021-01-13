@@ -158,11 +158,11 @@ describe('Notes Endpoints', function() {
                     const actual = new Date(res.body.date_modified).toLocaleString()
                     expect(actual).to.eql(expected)
                 })
-                .then(postRes => 
+                .then(postRes => {
                     supertest(app)
                         .get(`/api/notes/${postRes.body.id}`)
                         .expect(postRes.body)
-                )
+                })
         })
         it(`responds with 400 and an error message when the 'note_name' is missing`, () => {
             return supertest(app)

@@ -61,7 +61,7 @@ describe('Folders endpoints', function() {
         })
     })
 
-    describe.only(`GET /api/folders/folder_id`, () => {
+    describe(`GET /api/folders/folder_id`, () => {
         context(`Given no folders`, () => {
             it('responds with 400', () => {
                 const folderId = 123456
@@ -100,6 +100,46 @@ describe('Folders endpoints', function() {
                         expect(res.body.folder_name).to.eql(expectedFolder.folder_name)
                     })
             })
+        })
+    })
+
+    describe.only('POST /api/folders', () => {
+        it(`creates a folder, responding with 201 and the new folder`, () => {
+            const newFolder = {
+                folder_name: 'Test Folder'
+            }
+            return supertest(app)
+                .post('/api/folders')
+                .send(newFolder)
+                .expect(201)
+                .expect(res => {
+                    expect(res.body.folder_name).to.eql(newFolder.folder_name)
+                    expect(res.body).to.have.property('id')
+                    expect(res.headers.location).to.eql(`/api/folders/${res.body.id}`)
+                })
+                .then(postRes => {
+                    supertest(app)
+                        .get(`/api/folders/${postRes.body.id}`)
+                        .expect(postRes.body)
+                })
+        })
+        it(`it responds with 400 and an error message when the 'folder_name' is missing`, () => {
+            return supertest(app)
+                .post('/api/folders')
+                .send()
+                .expect(400, {
+                    error: {message: `Missing 'folder_name' in request body`}
+                })
+        })
+        it('removes XSS attack content from response', () => {
+            const {maliciousFolder, expectedFolder} = makeMaliciousFolder()
+            return supertest(app)
+                .post(`/api/folders`)
+                .send(maliciousFolder)
+                .expect(201)
+                .expect(res => {
+                    expect(res.body.folder_name).to.eql(expectedFolder.folder_name)
+                })
         })
     })
 
