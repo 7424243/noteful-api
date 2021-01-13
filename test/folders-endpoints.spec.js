@@ -103,7 +103,7 @@ describe('Folders endpoints', function() {
         })
     })
 
-    describe.only('POST /api/folders', () => {
+    describe('POST /api/folders', () => {
         it(`creates a folder, responding with 201 and the new folder`, () => {
             const newFolder = {
                 folder_name: 'Test Folder'
@@ -140,6 +140,37 @@ describe('Folders endpoints', function() {
                 .expect(res => {
                     expect(res.body.folder_name).to.eql(expectedFolder.folder_name)
                 })
+        })
+    })
+
+    describe(`DELETE /api/folders/:folder_id`, () => {
+        context('Given no folders', () => {
+            it(`responds with 404`, () => {
+                const folderId = 123456
+                return supertest(app)
+                    .delete(`/api/folders/${folderId}`)
+                    .expect(404, {error: {message: `Folder doesn't exist`}})
+            })
+        })
+        context('Given there are folds in the database', () => {
+            const testFolders = makeFoldersArray()
+            beforeEach('insert folders', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+            })
+            it(`responds with 204 and removes the folder`, () => {
+                const idToRemove = 2
+                const expectedFolders = testFolders.filter(folder => folder.id !== idToRemove)
+                return supertest(app)
+                    .delete(`/api/folders/${idToRemove}`)
+                    .expect(204)
+                    .then(res => {
+                        supertest(app)
+                            .get(`/api/folders`)
+                            .expect(expectedFolders)
+                    })
+            })
         })
     })
 
