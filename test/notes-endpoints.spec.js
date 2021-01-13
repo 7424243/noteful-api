@@ -197,5 +197,53 @@ describe('Notes Enpoints', function() {
                     error: {message: `Missing 'folder_id' in request body`}
                 })
         })
+        it(`removes XSS attack content from response`, () => {
+            const {maliciousNote, expectedNote} = makeMaliciousNote()
+            return supertest(app)
+                .post('/api/notes')
+                .send(maliciousNote)
+                .expect(201)
+                .expect(res => {
+                    expect(res.body.note_name).to.eql(expectedNote.note_name)
+                    expect(res.body.content).to.eql(expectedNote.content)
+                })
+        })
+    })
+
+    describe(`DELETE /api/notes/:note_id`, () => {
+        context(`Given no notes`, () => {
+            it(`responds with 404`, () => {
+                const noteId = 123456
+                return supertest(app)
+                    .delete(`/api/notes/${noteId}`)
+                    .expect(404, {error: {message: `Note doesn't exist`}})
+            })
+        })
+        context('Given there are notes in the db', () => {
+            const testFolders = makeFoldersArray()
+            const testNotes = makeNotesArray()
+            beforeEach('insert notes', () => {
+                return db
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
+            })
+            it('responds with 204 and removes the note', () => {
+                const idToRemove = 2
+                const expectedNotes = testNotes.filter(note => note.id !== idToRemove)
+                return supertest(app)
+                    .delete(`/api/notes/${idToRemove}`)
+                    .expect(204)
+                    .then(res => {
+                        supertest(app)
+                            .get(`/api/notes`)
+                            .expect(expectedNotes)
+                    })
+            })
+        })
     })
 })
