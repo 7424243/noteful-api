@@ -81,7 +81,7 @@ describe('Notes Enpoints', function() {
         })
     })
 
-    describe.only(`GET /api/notes/:note_id`, () => {
+    describe(`GET /api/notes/:note_id`, () => {
         context('Given no notes', () => {
             it('Responds with 400', () => {
                 const noteId = 123456
@@ -133,6 +133,69 @@ describe('Notes Enpoints', function() {
                         expect(res.body.content).to.eql(expectedNote.content)
                     })
             })
+        })
+    })
+
+    describe.only(`POST /api/notes`, () => {
+        it(`creates a new note, responding with 201 and the new note`, function() {
+            this.retries(3)
+            const newNote = {
+                note_name: 'Test Note Name',
+                content: 'Test Note Content',
+                folder_id: 2
+            }
+            return supertest(app)
+                .post('/api/notes')
+                .send(newNote)
+                .expect(201)
+                .expect(res => {
+                    expect(res.body.note_name).to.eql(newNote.note_name)
+                    expect(res.body.content).to.eql(newNote.content)
+                    expect(res.body.folder_id).to.eql(newNote.folder_id)
+                    expect(res.body).to.have.property('id')
+                    expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`)
+                    const expected = new Date().toLocaleString()
+                    const actual = new Date(res.body.date_modified).toLocaleString()
+                    expect(actual).to.eql(expected)
+                })
+                .then(postRes => 
+                    supertest(app)
+                        .get(`/api/notes/${postRes.body.id}`)
+                        .expect(postRes.body)
+                )
+        })
+        it(`responds with 400 and an error message when the 'note_name' is missing`, () => {
+            return supertest(app)
+                .post('/api/notes')
+                .send({
+                    content: 'Test Note Content',
+                    folder_id: 2,
+                })
+                .expect(400, {
+                    error: {message: `Missing 'note_name' in request body`}
+                })
+        })
+        it(`responds with 400 and an error message when the 'content' is missing`, () => {
+            return supertest(app)
+                .post('/api/notes')
+                .send({
+                    note_name: 'Test Note Name',
+                    folder_id: 2,
+                })
+                .expect(400, {
+                    error: {message: `Missing 'content' in request body`}
+                })
+        })
+        it(`responds with 400 and an error message when the 'folder_id' is missing`, () => {
+            return supertest(app)
+                .post('/api/notes')
+                .send({
+                    note_name: 'Test Note Name',
+                    content: 'Test Note Content',
+                })
+                .expect(400, {
+                    error: {message: `Missing 'folder_id' in request body`}
+                })
         })
     })
 })
