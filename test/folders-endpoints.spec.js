@@ -174,7 +174,7 @@ describe('Folders endpoints', function() {
         })
     })
 
-    describe.only(`PATCH /api/folders/:folder_id`, () => {
+    describe(`PATCH /api/folders/:folder_id`, () => {
         context(`Given no folders`, () => {
             it(`responds with 404`, () => {
                 const folderId = 12345

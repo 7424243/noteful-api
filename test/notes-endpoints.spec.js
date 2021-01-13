@@ -138,31 +138,38 @@ describe('Notes Endpoints', function() {
 
     describe(`POST /api/notes`, () => {
         it(`creates a note, responding with 201 and the new note`, () => {
+            const testFolders = makeFoldersArray()
             this.retries(3)
             const newNote = {
                 note_name: 'Test Note Name',
                 content: 'Test Note Content',
                 folder_id: 2
             }
-            return supertest(app)
-                .post('/api/notes')
-                .send(newNote)
-                .expect(201)
-                .expect(res => {
-                    expect(res.body.note_name).to.eql(newNote.note_name)
-                    expect(res.body.content).to.eql(newNote.content)
-                    expect(res.body.folder_id).to.eql(newNote.folder_id)
-                    expect(res.body).to.have.property('id')
-                    expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`)
-                    const expected = new Date().toLocaleString()
-                    const actual = new Date(res.body.date_modified).toLocaleString()
-                    expect(actual).to.eql(expected)
+            return db
+                .into('noteful_folders')
+                .insert(testFolders)
+                .then(() => {
+                    return supertest(app)
+                    .post('/api/notes')
+                    .send(newNote)
+                    .expect(201)
+                    .expect(res => {
+                        expect(res.body.note_name).to.eql(newNote.note_name)
+                        expect(res.body.content).to.eql(newNote.content)
+                        expect(res.body.folder_id).to.eql(newNote.folder_id)
+                        expect(res.body).to.have.property('id')
+                        expect(res.headers.location).to.eql(`/api/notes/${res.body.id}`)
+                        const expected = new Date().toLocaleString()
+                        const actual = new Date(res.body.date_modified).toLocaleString()
+                        expect(actual).to.eql(expected)
+                    })
+                    .then(postRes => {
+                        supertest(app)
+                            .get(`/api/notes/${postRes.body.id}`)
+                            .expect(postRes.body)
+                    })
                 })
-                .then(postRes => {
-                    supertest(app)
-                        .get(`/api/notes/${postRes.body.id}`)
-                        .expect(postRes.body)
-                })
+            
         })
         it(`responds with 400 and an error message when the 'note_name' is missing`, () => {
             return supertest(app)
@@ -198,15 +205,22 @@ describe('Notes Endpoints', function() {
                 })
         })
         it(`removes XSS attack content from response`, () => {
+            const testFolders = makeFoldersArray()
             const {maliciousNote, expectedNote} = makeMaliciousNote()
-            return supertest(app)
-                .post(`/api/notes`)
-                .send(maliciousNote)
-                .expect(201)
-                .expect(res => {
-                    expect(res.body.title).to.eql(expectedNote.note_name)
-                    expect(res.body.content).to.eql(expectedNote.content)
+            return db
+                .into('noteful_folders')
+                .insert(testFolders)
+                .then(() => {
+                    return supertest(app)
+                    .post(`/api/notes`)
+                    .send(maliciousNote)
+                    .expect(201)
+                    .expect(res => {
+                        expect(res.body.note_name).to.eql(expectedNote.note_name)
+                        expect(res.body.content).to.eql(expectedNote.content)
+                    })
                 })
+
         })
     })
 
