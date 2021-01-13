@@ -3,6 +3,7 @@ const knex = require('knex')
 const supertest = require('supertest')
 const app = require('../src/app')
 const {makeNotesArray} = require('./notes.fixtures')
+const {makeFoldersArray} = require('./folders.fixtures')
 
 describe('Notes Enpoints', function() {
     let db
@@ -33,11 +34,19 @@ describe('Notes Enpoints', function() {
 
         //for when the db table has data
         context('Given there are notes in the database', () => {
+            //test data
+            const testFolders = makeFoldersArray()
             const testNotes = makeNotesArray()
+            //insert the test data
             beforeEach('insert notes', () => {
-                return db
-                    .into('noteful_notes')
-                    .insert(testNotes)
+                return db   
+                    .into('noteful_folders')
+                    .insert(testFolders)
+                    .then(() => {
+                        return db
+                            .into('noteful_notes')
+                            .insert(testNotes)
+                    })
             })
             it('GET /api/notes responds with 200 and all of the notes', () => {
                 return supertest(app)
